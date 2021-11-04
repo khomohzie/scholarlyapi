@@ -1,0 +1,22 @@
+{
+  "name": "scholarly-server",
+  "version": "1.0.0",
+  "description": "The backend for a Learning Management System - Scholarly",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lms",
+    "mern",
+    "scholarly",
+    "nodejs",
+    "express",
+    "mongodb",
+    "mongoose",
+    "cors",
+    "aws"
+  ],
+  "author": "khomohzie",
+  "license": "ISC"
+}
