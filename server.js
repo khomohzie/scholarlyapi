@@ -2,6 +2,7 @@ require("dotenv").config();
 import express from 'express';
 import cors from 'cors';
 import { readdirSync } from 'fs';
+import mongoose from 'mongoose';
 const morgan = require('morgan');
 
 // create express app
@@ -11,6 +12,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+
+// database
+mongoose.connect(process.env.DATABASE)
+    .then(() => console.log("DB connected"))
+    .catch((err) => console.log("Error from DB: ", err));
 
 // routes
 readdirSync("./routes").map((fileName) => {
