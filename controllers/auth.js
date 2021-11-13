@@ -1,6 +1,7 @@
 import User from '../models/user';
 import { errorHandler } from '../utils/dbErrorHandler';
 import { hashPassword, comparePassword } from '../utils/auth';
+import jwt from 'jsonwebtoken';
 
 // Use async and await because the hashPassword function returns a promise
 export const register = async (req, res) => {
@@ -39,6 +40,43 @@ export const register = async (req, res) => {
         });
 
     } catch (err) {
+        console.log(err);
+
+        res.status(400).send("Error! Please try again.");
+    }
+}
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Check if the email exists in the database
+        const user = await User.findOne({ email }).exec();
+        if (!user) return res.status(400).send("No user found!");
+
+        // Compare incoming password against stored password
+        const matchPassword = await comparePassword(password, user.password);
+
+        // Create signed jwt
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: "7d"
+        });
+
+        // Respond to client with user details, token and exclude hashed password
+        user.password = undefined;
+
+        // Send the token in a cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            // secure: true // Only works on https
+        });
+
+        // Send the user as a json response
+        res.json({
+            user,
+            message: "Login success!"
+        });
+    } catch (error) {
         console.log(err);
 
         res.status(400).send("Error! Please try again.");
