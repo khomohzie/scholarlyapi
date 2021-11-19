@@ -84,6 +84,20 @@ export const login = async (req, res) => {
 	}
 };
 
+export const currentUser = async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id)
+			.select("-password")
+			.exec();
+
+		return res.json({ message: "Authorized!" });
+	} catch (error) {
+		console.log(error);
+
+		res.status(400).send("Cannot authenticate user!");
+	}
+};
+
 export const logout = (req, res) => {
 	try {
 		res.clearCookie("token");
