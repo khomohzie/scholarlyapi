@@ -8,10 +8,8 @@ export const makeInstructor = async (req, res) => {
 		const user = await User.findById(req.user._id).exec();
 
 		// If user does not have stripe_account_id yet, create new account
-		// Pre-fill any info such as email (optional)
-
 		if (!user.stripe_account_id) {
-			const account = await stripe.accounts.create({ type: "express", "stripe_user[email]": user.email });
+			const account = await stripe.accounts.create({ type: "express" });
 
 			user.stripe_account_id = account.id;
 
@@ -24,6 +22,11 @@ export const makeInstructor = async (req, res) => {
 			refresh_url: process.env.STRIPE_REDIRECT_URL,
 			return_url: process.env.STRIPE_REDIRECT_URL,
 			type: "account_onboarding",
+		});
+
+		// Pre-fill any info such as email (optional), then send url response to frontend
+		accountLink = Object.assign(accountLink, {
+			"stripe_user[email]": user.email,
 		});
 
 		// Then send the account link as response to frontend
