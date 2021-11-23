@@ -1,5 +1,5 @@
 import User from "../models/user";
-import { errorHandler } from "../utils/dbErrorHandler";
+import { translateError } from "../utils/mongo_helper";
 import { hashPassword, comparePassword } from "../utils/auth";
 import jwt from "jsonwebtoken";
 import AWS from "aws-sdk";
@@ -46,7 +46,7 @@ export const register = async (req, res) => {
 
 		await user.save((err, user) => {
 			if (err) {
-				return res.status(401).json({ error: errorHandler(err) });
+				return res.status(401).json({ error: translateError(err) });
 			}
 
 			return res.json({ message: "Signup success!" });
