@@ -1,5 +1,8 @@
+import Course from "../models/course";
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
+import slugify from "slugify";
+import { translateError } from "../utils/mongo_helper";
 
 const awsConfig = {
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -66,5 +69,28 @@ export const removeImage = async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
+	}
+};
+
+export const createCourse = async (req, res) => {
+	try {
+		const alreadyExists = await Course.findOne({
+			slug: slugify(req.body.name.toLowerCase()),
+		});
+		if (alreadyExists) return res.status(400).send("Title is taken!");
+
+		const course = new Course({
+			slug: slugify(req.body.name),
+			instructor: req.user._id,
+			...req.body,
+		});
+		await course.save((err, course) => {
+			if (err) return res.status(400).send(translateError(err));
+
+			return res.json(course);
+		});
+	} catch (error) {
+		console.log(error);
+		return res.status(400).send("Failed to create course! Try again.");
 	}
 };
