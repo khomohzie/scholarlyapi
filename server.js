@@ -14,7 +14,7 @@ const app = express();
 
 // apply middlewares
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 // parse cookies: we need this because "cookie" is true in csrfProtection
 app.use(cookieParser());
 app.use(morgan("dev"));
