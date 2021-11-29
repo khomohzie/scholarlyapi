@@ -1,4 +1,5 @@
 import User from "../models/user";
+import Course from "../models/course";
 import queryString from "query-string";
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
@@ -7,9 +8,12 @@ export const makeInstructor = async (req, res) => {
 		// Query database for user information
 		const user = await User.findById(req.user._id).exec();
 
-		// If user does not have stripe_account_id yet, create new account
+		/**
+		 * If user does not have stripe_account_id yet, create new account
+		 * Pre-fill any info such as email (optional), then send url response to frontend
+		*/
 		if (!user.stripe_account_id) {
-			const account = await stripe.accounts.create({ type: "express" });
+			const account = await stripe.accounts.create({ type: "express", email: user.email });
 
 			user.stripe_account_id = account.id;
 
@@ -24,7 +28,7 @@ export const makeInstructor = async (req, res) => {
 			type: "account_onboarding",
 		});
 
-		// Pre-fill any info such as email (optional), then send url response to frontend
+		// Pre-fill any info such as email (optional) [NOT WORKING!]
 		accountLink = Object.assign(accountLink, {
 			"stripe_user[email]": user.email,
 		});
@@ -33,6 +37,21 @@ export const makeInstructor = async (req, res) => {
 		res.send(`${accountLink.url}?${queryString.stringify(accountLink)}`);
 	} catch (error) {
 		console.log("MAKE INSTRUCTOR ERROR: ", error);
+	}
+};
+
+export const deleteInstructor = async (req, res) => {
+	const user = await User.findById(req.user._id).exec();
+
+	try {
+		const deleted = await stripe.accounts.del(
+			user.stripe_account_id
+		);
+
+		res.json(deleted);
+	} catch (error) {
+		console.log(error);
+		res.status(400).send("Failed! Try again.");
 	}
 };
 
@@ -72,6 +91,18 @@ export const currentInstructor = async (req, res) => {
 		} else {
 			res.json({ message: "Authorized!" });
 		}
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+export const instructorCourses = async (req, res) => {
+	try {
+		const courses = await Course.find({ instructor: req.user._id })
+			.sort({ createdAt: -1 })
+			.exec();
+
+		res.json(courses);
 	} catch (error) {
 		console.log(error);
 	}
