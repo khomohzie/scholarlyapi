@@ -82,6 +82,7 @@ export const createCourse = async (req, res) => {
 		const course = new Course({
 			slug: slugify(req.body.name),
 			instructor: req.user._id,
+			description: req.body.editorDescription,
 			...req.body,
 		});
 		await course.save((err, course) => {
@@ -98,7 +99,7 @@ export const createCourse = async (req, res) => {
 export const readCourse = async (req, res) => {
 	try {
 		const course = await Course.findOne({ slug: req.params.slug })
-			.populate('instructor', '_id name')
+			.populate("instructor", "_id name")
 			.exec();
 
 		res.json(course);
