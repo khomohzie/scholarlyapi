@@ -1,4 +1,5 @@
 import express from "express";
+import formidable from "express-formidable";
 
 const router = express.Router();
 
@@ -9,7 +10,10 @@ const {
 	uploadImage,
 	removeImage,
 	createCourse,
-	readCourse
+	readCourse,
+	uploadVideo,
+	removeVideo,
+	addLesson
 } = require("../controllers/course");
 
 // Image
@@ -18,5 +22,8 @@ router.post("/course/remove-image", removeImage);
 // Course
 router.post("/course", requireSignin, isInstructor, createCourse);
 router.get("/course/:slug", readCourse);
+router.post("/course/video-upload/:instructorId", requireSignin, formidable(), uploadVideo);
+router.post("/course/video-remove/:instructorId", requireSignin, removeVideo);
+router.post("/course/lesson/:slug/:instructorId", requireSignin, addLesson);
 
 module.exports = router;
