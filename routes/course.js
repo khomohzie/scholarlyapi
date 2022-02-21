@@ -10,6 +10,7 @@ const {
 	uploadImage,
 	removeImage,
 	createCourse,
+	updateCourse,
 	readCourse,
 	uploadVideo,
 	removeVideo,
@@ -21,6 +22,7 @@ router.post("/course/upload-image", uploadImage);
 router.post("/course/remove-image", removeImage);
 // Course
 router.post("/course", requireSignin, isInstructor, createCourse);
+router.put("/course/:slug", requireSignin, updateCourse);
 router.get("/course/:slug", readCourse);
 router.post("/course/video-upload/:instructorId", requireSignin, formidable(), uploadVideo);
 router.post("/course/video-remove/:instructorId", requireSignin, removeVideo);
