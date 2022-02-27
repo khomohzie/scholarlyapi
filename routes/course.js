@@ -14,6 +14,8 @@ const {
 	readCourse,
 	uploadVideo,
 	removeVideo,
+	publishCourse,
+	unpublishCourse,
 	addLesson,
 	updateLesson,
 	removeLesson,
@@ -33,6 +35,12 @@ router.post(
 	uploadVideo
 );
 router.post("/course/video-remove/:instructorId", requireSignin, removeVideo);
+
+// Publish or unpublish
+router.put("/course/publish/:courseId", requireSignin, publishCourse);
+router.put("/course/unpublish/:courseId", requireSignin, unpublishCourse);
+
+// Lesson
 router.post("/course/lesson/:slug/:instructorId", requireSignin, addLesson);
 router.put("/course/lesson/:slug/:instructorId", requireSignin, updateLesson);
 router.put("/course/:slug/:lessonId", requireSignin, removeLesson);
