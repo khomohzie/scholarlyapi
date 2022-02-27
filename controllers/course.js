@@ -214,3 +214,55 @@ export const updateCourse = async (req, res) => {
 		return res.status(400).send(error.message);
 	}
 };
+
+export const updateLesson = async (req, res) => {
+	try {
+		const { slug } = req.params;
+		const { _id, title, content, video, free_preview } = req.body;
+
+		const course = await Course.findOne({ slug })
+			.select("instructor")
+			.exec();
+
+		if (course.instructor._id != req.user._id) {
+			return res.status(400).send("Unauthorized!");
+		}
+
+		const updated = await Course.updateOne(
+			{ "lessons._id": _id },
+			{
+				$set: {
+					"lessons.$.title": title,
+					"lessons.$.content": content,
+					"lessons.$.video": video,
+					"lessons.$.free_preview": free_preview,
+				},
+			},
+			{ new: true }
+		).exec();
+
+		res.json({ ok: true });
+	} catch (err) {
+		console.log(err);
+		return res.status(400).send("Update lesson failed");
+	}
+};
+
+export const removeLesson = async (req, res) => {
+	try {
+		const { slug, lessonId } = req.params;
+
+		const course = await Course.findOne({ slug }).exec();
+
+		if (req.user._id != course.instructor)
+			return res.status(400).send("Unauthorized!");
+
+		const deletedCourse = await Course.findByIdAndUpdate(course._id, {
+			$pull: { lessons: { _id: lessonId } },
+		}).exec();
+
+		res.json({ ok: true });
+	} catch (error) {
+		console.log(error);
+	}
+};

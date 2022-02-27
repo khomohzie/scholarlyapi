@@ -14,7 +14,9 @@ const {
 	readCourse,
 	uploadVideo,
 	removeVideo,
-	addLesson
+	addLesson,
+	updateLesson,
+	removeLesson,
 } = require("../controllers/course");
 
 // Image
@@ -24,8 +26,15 @@ router.post("/course/remove-image", removeImage);
 router.post("/course", requireSignin, isInstructor, createCourse);
 router.put("/course/:slug", requireSignin, updateCourse);
 router.get("/course/:slug", readCourse);
-router.post("/course/video-upload/:instructorId", requireSignin, formidable(), uploadVideo);
+router.post(
+	"/course/video-upload/:instructorId",
+	requireSignin,
+	formidable(),
+	uploadVideo
+);
 router.post("/course/video-remove/:instructorId", requireSignin, removeVideo);
 router.post("/course/lesson/:slug/:instructorId", requireSignin, addLesson);
+router.put("/course/lesson/:slug/:instructorId", requireSignin, updateLesson);
+router.put("/course/:slug/:lessonId", requireSignin, removeLesson);
 
 module.exports = router;
