@@ -1,4 +1,5 @@
 import Course from "../models/course";
+import User from "../models/user";
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
 import slugify from "slugify";
@@ -91,6 +92,16 @@ export const createCourse = async (req, res) => {
 
 			return res.json(course);
 		});
+
+		// This adds a created course to the owner's course list
+		// so they don't need to enroll or pay for their own course.
+		await User.findByIdAndUpdate(
+			req.user._id,
+			{
+				$addToSet: { courses: course._id },
+			},
+			{ new: true }
+		).exec();
 	} catch (error) {
 		console.log(error);
 		return res.status(400).send("Failed to create course! Try again.");
@@ -321,6 +332,50 @@ export const courses = async (req, res) => {
 	const all = await Course.find({ published: true })
 		.populate("instructor", "_id name")
 		.exec();
-		
+
 	res.json(all);
+};
+
+export const checkEnrollment = async (req, res) => {
+	const { courseId } = req.params;
+
+	// find courses of the currently logged in user
+	const user = await User.findById(req.user._id).exec();
+
+	// check if course id is found in user courses array
+	let ids = [];
+	let coursesLength = user.courses && user.courses.length;
+
+	for (let i = 0; i < coursesLength; i++) {
+		ids.push(user.courses[i].toString());
+	}
+
+	res.json({
+		status: ids.includes(courseId),
+		course: await Course.findById(courseId).exec(),
+	});
+};
+
+export const freeEnrollment = async (req, res) => {
+	try {
+		// check if course is free or paid
+		const course = await Course.findById(req.params.courseId).exec();
+		if (course.paid) return;
+
+		const result = await User.findByIdAndUpdate(
+			req.user._id,
+			{
+				$addToSet: { courses: course._id },
+			},
+			{ new: true }
+		).exec();
+
+		res.json({
+			message: "Congratulations! Enrollment successful.",
+			course,
+		});
+	} catch (error) {
+		console.log("free enrollment err", error);
+		return res.status(400).send("Enrollment failed!");
+	}
 };
