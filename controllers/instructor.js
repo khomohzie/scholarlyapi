@@ -11,9 +11,12 @@ export const makeInstructor = async (req, res) => {
 		/**
 		 * If user does not have stripe_account_id yet, create new account
 		 * Pre-fill any info such as email (optional), then send url response to frontend
-		*/
+		 */
 		if (!user.stripe_account_id) {
-			const account = await stripe.accounts.create({ type: "express", email: user.email });
+			const account = await stripe.accounts.create({
+				type: "express",
+				email: user.email,
+			});
 
 			user.stripe_account_id = account.id;
 
@@ -44,9 +47,7 @@ export const deleteInstructor = async (req, res) => {
 	const user = await User.findById(req.user._id).exec();
 
 	try {
-		const deleted = await stripe.accounts.del(
-			user.stripe_account_id
-		);
+		const deleted = await stripe.accounts.del(user.stripe_account_id);
 
 		res.json(deleted);
 	} catch (error) {
@@ -103,6 +104,18 @@ export const instructorCourses = async (req, res) => {
 			.exec();
 
 		res.json(courses);
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+export const studentCount = async (req, res) => {
+	try {
+		const students = await User.find({ courses: req.body.courseId })
+			.select("_id")
+			.exec();
+
+		res.json(students);
 	} catch (error) {
 		console.log(error);
 	}
