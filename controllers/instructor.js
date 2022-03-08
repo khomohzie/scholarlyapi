@@ -120,3 +120,36 @@ export const studentCount = async (req, res) => {
 		console.log(error);
 	}
 };
+
+export const instructorBalance = async (req, res) => {
+	try {
+		let user = await User.findById(req.user._id).exec();
+
+		const balance = await stripe.balance.retrieve({
+			stripeAccount: user.stripe_account_id,
+		});
+
+		res.json(balance);
+	} catch (error) {
+		console.log(error);
+		res.status(400).send(`Failed to retrieve balance! => ${error}`);
+	}
+};
+
+export const instructorPayoutSettings = async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id).exec();
+
+		const loginLink = await stripe.accounts.createLoginLink(
+			user.stripe_seller.id,
+			{ redirect_url: process.env.STRIPE_SETTINGS_REDIRECT }
+		);
+
+		res.json(loginLink.url);
+	} catch (error) {
+		console.log(`stripe payout settings login link error => , ${error}`);
+		res.status(400).send(
+			`Unable to access payout settings! Try later. ${error}`
+		);
+	}
+};
