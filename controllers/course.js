@@ -331,8 +331,11 @@ export const removeLesson = async (req, res) => {
 };
 
 export const courses = async (req, res) => {
+	const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+
 	const all = await Course.find({ published: true })
 		.populate("instructor", "_id name")
+		.limit(limit)
 		.exec();
 
 	res.json(all);
