@@ -20,8 +20,13 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 
 // database
+const uri =
+	process.env.NODE_ENV === "production"
+		? process.env.DATABASE_CLOUD
+		: process.env.DATABASE;
+
 mongoose
-	.connect(process.env.DATABASE)
+	.connect(uri)
 	.then(() => console.log("DB connected"))
 	.catch((err) => console.log("Error from DB: ", err));
 
